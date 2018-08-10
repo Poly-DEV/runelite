@@ -1,4 +1,4 @@
-package net.runelite.client.plugins.nabwithdraw;
+package net.runelite.client.plugins.nab.nabwithdraw;
 
 import net.runelite.client.input.KeyListener;
 
@@ -11,9 +11,9 @@ public class NabWithdrawKeyboardListener implements KeyListener {
 
     @Override
     public void keyTyped ( KeyEvent e ) {
-    
+
     }
-    
+
     @Override
     public void keyPressed ( KeyEvent e ) {
         if (e.getKeyCode() == KeyEvent.VK_SHIFT)
@@ -21,7 +21,7 @@ public class NabWithdrawKeyboardListener implements KeyListener {
             plugin.setShiftModifier(true);
         }
     }
-    
+
     @Override
     public void keyReleased ( KeyEvent e ) {
         if (e.getKeyCode() == KeyEvent.VK_SHIFT)

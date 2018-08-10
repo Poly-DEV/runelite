@@ -1,4 +1,4 @@
-package net.runelite.client.plugins.nabxp;
+package net.runelite.client.plugins.nab.nabxp;
 
 import com.google.common.eventbus.Subscribe;
 import lombok.extern.slf4j.Slf4j;
@@ -7,9 +7,10 @@ import net.runelite.api.GameState;
 import net.runelite.api.Skill;
 import net.runelite.api.events.ExperienceChanged;
 import net.runelite.api.events.GameStateChanged;
-import net.runelite.client.game.ItemStack;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+import net.runelite.client.plugins.nab.UserDatabase;
+
 import javax.inject.Inject;
 import java.io.File;
 import java.sql.*;
@@ -24,25 +25,18 @@ public class NabXPPlugin extends Plugin {
     @Inject
     private Client client;
     
-    private Connection database;
-    
-    public static final File DATABASE_DIR = new File( RUNELITE_DIR, "sql" );
+    private UserDatabase userDatabase;
     
     private Map< Skill, Integer > previousXP = new HashMap<>(  );
-    
-    @Override
-    public void startUp () {
-        DATABASE_DIR.mkdirs();
-    }
     
     @Subscribe
     public void onGameStateChanged ( final GameStateChanged gameStateChanged ) {
         if ( gameStateChanged.getGameState() == GameState.LOGIN_SCREEN ) {
-            if ( database != null ){
+            if ( userDatabase != null ){
                 try {
-                    database.commit();
-                    database.close();
-                    database = null;
+                    userDatabase.getDatabase().commit();
+                    userDatabase.getDatabase().close();
+                    userDatabase = null;
                     previousXP.clear();
                 } catch ( SQLException e ) {
                     e.printStackTrace();
@@ -63,10 +57,14 @@ public class NabXPPlugin extends Plugin {
         int dif = xp - previousXP.get( skill );
         previousXP.put( skill, xp );
         
+        if ( dif == 0 ){
+            return;
+        }
+        
         try {
             tryConnect();
     
-            Statement s = database.createStatement();
+            Statement s = userDatabase.getDatabase().createStatement();
         
             String sql = "INSERT INTO DROPS (ID, SKILL, XP, TOTAL, TIME) VALUES ( NULL, " + skill.ordinal() + ", "+ dif + ", "+  xp +", '" + new Timestamp( System.currentTimeMillis() ) + "' )";
         
@@ -77,11 +75,11 @@ public class NabXPPlugin extends Plugin {
     }
     
     private void tryConnect () throws SQLException {
-        if ( database != null ) { return; }
-        database = DriverManager.getConnection( "jdbc:hsqldb:file:" + DATABASE_DIR.getAbsolutePath() + "/" + client.getLocalPlayer().getName() + "/xp", "sa", "" );
+        if ( userDatabase != null ) { return; }
+        userDatabase = new UserDatabase( client.getUsername(), "xp" );
         
         //Run create script
-        Statement s = database.createStatement();
+        Statement s = userDatabase.getDatabase().createStatement();
         s.addBatch( "CREATE TABLE IF NOT EXISTS DROPS( ID INT PRIMARY KEY IDENTITY , SKILL INT, XP INT, TOTAL INT, TIME TIMESTAMP );" );
         s.executeBatch();
         s.close();

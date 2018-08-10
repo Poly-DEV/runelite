@@ -1,11 +1,9 @@
-package net.runelite.client.plugins.nabloot;
+package net.runelite.client.plugins.nab.nabloot;
 
 import net.runelite.api.Client;
 import net.runelite.client.ui.PluginPanel;
 
 import javax.inject.Inject;
-import javax.swing.*;
-import javax.swing.tree.DefaultMutableTreeNode;
 
 public class NabLootPanel extends PluginPanel {
     @Inject

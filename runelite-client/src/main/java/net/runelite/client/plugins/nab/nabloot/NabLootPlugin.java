@@ -1,4 +1,4 @@
-package net.runelite.client.plugins.nabloot;
+package net.runelite.client.plugins.nab.nabloot;
 
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Provides;
@@ -13,6 +13,7 @@ import net.runelite.client.game.ItemManager;
 import net.runelite.client.game.ItemStack;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+import net.runelite.client.plugins.nab.UserDatabase;
 import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
 import net.runelite.client.util.ImageUtil;
@@ -43,7 +44,7 @@ public class NabLootPlugin extends Plugin {
     @Inject
     private ItemManager itemManager;
     
-    private Connection database;
+    private UserDatabase userDatabase;
     
     public static final File DATABASE_DIR = new File( RUNELITE_DIR, "sql" );
     
@@ -71,11 +72,11 @@ public class NabLootPlugin extends Plugin {
     @Subscribe
     public void onGameStateChanged ( final GameStateChanged gameStateChanged ) {
         if ( gameStateChanged.getGameState() == GameState.LOGIN_SCREEN ) {
-            if ( database != null ){
+            if ( userDatabase != null ){
                 try {
-                    database.commit();
-                    database.close();
-                    database = null;
+                    userDatabase.getDatabase().commit();
+                    userDatabase.getDatabase().close();
+                    userDatabase = null;
                 } catch ( SQLException e ) {
                     e.printStackTrace();
                 }
@@ -110,7 +111,7 @@ public class NabLootPlugin extends Plugin {
         tryConnect();
         
         try {
-            Statement s = database.createStatement();
+            Statement s = userDatabase.getDatabase().createStatement();
             
             s.execute( "INSERT INTO DROPS (ID, DROP_SOURCE, DROP_TIME) VALUES ( NULL, " + npc.getId() + ", '" + new Timestamp( System.currentTimeMillis() ) + "' )" );
             ResultSet result = s.executeQuery( "SELECT MAX(ID) AS ID FROM DROPS" );
@@ -136,11 +137,11 @@ public class NabLootPlugin extends Plugin {
     
     private void tryConnect () {
         try {
-            if ( database != null ) { return; }
-            database = DriverManager.getConnection( "jdbc:hsqldb:file:" + DATABASE_DIR.getAbsolutePath() + "/" + client.getLocalPlayer().getName() + "/loot", "sa", "" );
+            if ( userDatabase != null ) { return; }
+            userDatabase = new UserDatabase( client.getUsername(), "loot" );
             
             //Run create script
-            Statement s = database.createStatement();
+            Statement s = userDatabase.getDatabase().createStatement();
             s.addBatch( "CREATE TABLE IF NOT EXISTS ACCOUNTS ( ID INTEGER constraint ACCOUNTS_ID_UINDEX unique, NAME VARCHAR(13) );" );
             s.addBatch( "CREATE TABLE IF NOT EXISTS DROPS( ID INTEGER PRIMARY KEY IDENTITY, DROP_SOURCE INTEGER, DROP_TIME TIMESTAMP);" );
             s.addBatch( "CREATE TABLE IF NOT EXISTS ITEMS( ID INTEGER, ITEM_ID INTEGER, ITEM_COUNT INTEGER, CONSTRAINT ITEMS_DROPS_ID_FK FOREIGN KEY (ID) REFERENCES DROPS (ID));" );

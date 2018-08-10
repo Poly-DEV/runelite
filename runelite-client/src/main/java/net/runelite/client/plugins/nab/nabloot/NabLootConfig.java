@@ -1,8 +1,7 @@
-package net.runelite.client.plugins.nabloot;
+package net.runelite.client.plugins.nab.nabloot;
 
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
-import net.runelite.client.config.ConfigItem;
 
 @ConfigGroup("nabLoot")
 public interface NabLootConfig extends Config {
