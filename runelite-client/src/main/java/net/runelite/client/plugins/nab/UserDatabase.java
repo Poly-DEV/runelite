@@ -22,9 +22,8 @@ public class UserDatabase {
     }
     
     public UserDatabase ( String username, String database ) {
-        int i = username.indexOf( '@' );
-        this.username = username.substring( 0, i );;
-    
+        this.username = username;
+        
         if ( this.database != null ) { return; }
         try {
             this.database = DriverManager.getConnection( "jdbc:hsqldb:file:" + SQL_DIR.getAbsolutePath() + "/" + this.username + "/" + database, "sa", "" );

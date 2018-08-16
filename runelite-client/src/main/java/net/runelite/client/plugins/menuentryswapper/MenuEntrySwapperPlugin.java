@@ -33,6 +33,7 @@ import java.util.Collections;
 import javax.inject.Inject;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.ItemComposition;
@@ -64,6 +65,7 @@ import org.apache.commons.lang3.ArrayUtils;
 	tags = {"npcs", "inventory", "items", "objects"},
 	enabledByDefault = false
 )
+@Slf4j
 public class MenuEntrySwapperPlugin extends Plugin
 {
 	private static final String CONFIGURE = "Configure";
@@ -333,6 +335,8 @@ public class MenuEntrySwapperPlugin extends Plugin
 		int itemId = event.getIdentifier();
 		String option = Text.removeTags(event.getOption()).toLowerCase();
 		String target = Text.removeTags(event.getTarget()).toLowerCase();
+		
+        //log.info( option, target );
 
 		if (option.equals("talk-to"))
 		{
@@ -395,7 +399,9 @@ public class MenuEntrySwapperPlugin extends Plugin
 			{
 				swap("decant", option, target, true);
 			}
-		}
+		} else if (config.swapSmithAll() && option.contains( "smith" ) ){
+            swap("smith all sets", "smith 1 set", target, true);
+        }
 		else if (config.swapTravel() && option.equals("pass") && target.equals("energy barrier"))
 		{
 			swap("pay-toll(2-ecto)", option, target, true);

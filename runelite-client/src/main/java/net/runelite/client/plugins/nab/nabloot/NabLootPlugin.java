@@ -138,7 +138,7 @@ public class NabLootPlugin extends Plugin {
     private void tryConnect () {
         try {
             if ( userDatabase != null ) { return; }
-            userDatabase = new UserDatabase( client.getUsername(), "loot" );
+            userDatabase = new UserDatabase( client.getLocalPlayer().getName(), "loot" );
             
             //Run create script
             Statement s = userDatabase.getDatabase().createStatement();

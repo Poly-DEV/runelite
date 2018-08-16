@@ -53,9 +53,19 @@ public class NabWithdrawPlugin extends Plugin {
     
     int selectedEntry;
     
-    @Setter
     @Getter
     private boolean shiftModifier;
+    
+    public void setShiftModifier( boolean mod ){
+        shiftModifier = !controlModifier && mod;
+    }
+    
+    @Getter
+    private boolean controlModifier;
+    
+    public void setControlModifier( boolean mod ){
+        controlModifier = !shiftModifier && mod;
+    }
     
     @Override
     public void startUp () {
@@ -92,8 +102,14 @@ public class NabWithdrawPlugin extends Plugin {
             return;
         }
         
+        int current = selectedEntry;
+        
         if ( shiftModifier ){
             return;
+        }
+        
+        if ( controlModifier ){
+            current = 4;
         }
         
         //1 -> withdraw 1
@@ -105,8 +121,8 @@ public class NabWithdrawPlugin extends Plugin {
         int count = entries.length;
         
         MenuEntry tmp = entries[ count - 1 ];
-        entries[ count - 1 ] = entries[ count - selectedEntry ];
-        entries[ count - selectedEntry ] = tmp;
+        entries[ count - 1 ] = entries[ count - current ];
+        entries[ count - current ] = tmp;
         client.setMenuEntries( entries );
     }
     

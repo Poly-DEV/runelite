@@ -17,12 +17,14 @@ import net.runelite.client.plugins.nab.UserDatabase;
 import net.runelite.client.util.QueryRunner;
 
 import javax.inject.Inject;
+import java.awt.*;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
+import java.util.List;
 
 import static net.runelite.client.RuneLite.RUNELITE_DIR;
 
@@ -80,6 +82,23 @@ public class NabBankPlugin extends Plugin {
         } catch ( SQLException e ) {
             e.printStackTrace();
         }
+        
+        testShit();
+    }
+    
+    private void testShit (){
+    //    Widget widgetBankTitleBar = client.getWidget( WidgetInfo.BANK_TITLE_BAR );
+    //    Widget bankItemContainer = client.getWidget( WidgetInfo.BANK_ITEM_CONTAINER );
+    //
+    //    if ( widgetBankTitleBar == null || widgetBankTitleBar.isHidden() || widgetBankTitleBar.getText().contains( "Showing" ) || widgetBankTitleBar.getText().contains( "Tab" ) ) {
+    //        return;
+    //    }
+    //
+    //    WidgetItem coins = getItems()[ 39 ];
+    //
+    //    Widget test = bankItemContainer.createChild( 96, 5 );
+    //    WidgetItem item = test.getWidgetItem( 0 );
+    //    log.info( "{}", item.getId() );
     }
     
     private void save ( Widget widgetBankTitleBar ) throws SQLException {
@@ -162,7 +181,7 @@ public class NabBankPlugin extends Plugin {
             if ( userDatabase != null ) {
                 return;
             }
-            userDatabase = new UserDatabase( client.getUsername(), "bank" );
+            userDatabase = new UserDatabase( client.getLocalPlayer().getName(), "bank" );
     
             //Run create script
             Statement s = userDatabase.getDatabase().createStatement();

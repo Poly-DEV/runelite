@@ -76,7 +76,7 @@ public class NabXPPlugin extends Plugin {
     
     private void tryConnect () throws SQLException {
         if ( userDatabase != null ) { return; }
-        userDatabase = new UserDatabase( client.getUsername(), "xp" );
+        userDatabase = new UserDatabase( client.getLocalPlayer().getName(), "xp" );
         
         //Run create script
         Statement s = userDatabase.getDatabase().createStatement();

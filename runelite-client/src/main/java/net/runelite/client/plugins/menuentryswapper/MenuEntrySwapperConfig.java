@@ -31,6 +31,14 @@ import net.runelite.client.config.ConfigItem;
 @ConfigGroup("menuentryswapper")
 public interface MenuEntrySwapperConfig extends Config
 {
+    @ConfigItem(
+    keyName = "swapSmithAll", name = "Smith", description = "Swap Make All when smithing" )
+    default boolean swapSmithAll(){ return true; }
+    
+    @ConfigItem(
+    keyName = "swapBarbarianFishing", name = "Barbarian Fishing", description = "Swap drop when fishing" )
+    default boolean swapBarbarianFishing(){ return true; }
+
 	@ConfigItem(
 		position = 0,
 		keyName = "shiftClickCustomization",
