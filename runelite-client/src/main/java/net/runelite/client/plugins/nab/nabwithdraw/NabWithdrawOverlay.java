@@ -51,10 +51,10 @@ public class NabWithdrawOverlay extends Overlay {
         optionX = new Rectangle( bounds.x - 55, bounds.y - 20 + 108, 36, 32 );
         optionAll = new Rectangle( bounds.x - 55, bounds.y - 20 + 144, 36, 32 );
 
-        drawButton( graphics, plugin.isShiftModifier() || plugin.selectedEntry == 1, option1 );
+        drawButton( graphics, !plugin.isControlModifier() && ( plugin.isShiftModifier() || plugin.selectedEntry == 1 ), option1 );
         drawButton( graphics, !plugin.isShiftModifier() && !plugin.isControlModifier() && plugin.selectedEntry == 2, option5 );
         drawButton( graphics, !plugin.isShiftModifier() && !plugin.isControlModifier() && plugin.selectedEntry == 3, option10 );
-        drawButton( graphics, plugin.isControlModifier() || plugin.selectedEntry == 4, optionX );
+        drawButton( graphics, !plugin.isShiftModifier() && ( plugin.isControlModifier() || plugin.selectedEntry == 4 ), optionX );
         drawButton( graphics, !plugin.isShiftModifier() && !plugin.isControlModifier() && plugin.selectedEntry == 6, optionAll );
 
         graphics.drawString( "1", option1.x + 13, option1.y + 22 );

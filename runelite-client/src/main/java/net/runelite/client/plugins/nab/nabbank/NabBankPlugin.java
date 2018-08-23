@@ -178,7 +178,7 @@ public class NabBankPlugin extends Plugin {
     
     private void tryConnect () {
         try {
-            if ( userDatabase != null ) {
+            if ( userDatabase != null && userDatabase.getDatabase().isValid( 2 ) ) {
                 return;
             }
             userDatabase = new UserDatabase( client.getLocalPlayer().getName(), "bank" );
