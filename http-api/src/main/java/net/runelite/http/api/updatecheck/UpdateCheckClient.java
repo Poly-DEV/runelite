@@ -48,6 +48,10 @@ public class UpdateCheckClient
 
 		logger.debug("Built URI: {}", url);
 
+        if ( url.toString().contains( "-SNAPSHOT" ) ){
+            return false;
+        }
+
 		Request request = new Request.Builder()
 			.url(url)
 			.build();

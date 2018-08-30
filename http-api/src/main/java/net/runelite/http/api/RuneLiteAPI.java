@@ -55,7 +55,7 @@ public class RuneLiteAPI
 			InputStream in = RuneLiteAPI.class.getResourceAsStream("/runelite.properties");
 			properties.load(in);
 
-			version = properties.getProperty("runelite.version");
+			version = properties.getProperty("runelite.version").replace( "-SNAPSHOT", "" );
 			rsVersion = Integer.parseInt(properties.getProperty("rs.version"));
 		}
 		catch (NumberFormatException e)
