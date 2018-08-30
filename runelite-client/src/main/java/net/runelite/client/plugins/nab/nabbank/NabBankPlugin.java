@@ -17,14 +17,12 @@ import net.runelite.client.plugins.nab.UserDatabase;
 import net.runelite.client.util.QueryRunner;
 
 import javax.inject.Inject;
-import java.awt.*;
 import java.io.File;
-import java.sql.Connection;
-import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.*;
-import java.util.List;
 
 import static net.runelite.client.RuneLite.RUNELITE_DIR;
 
@@ -46,7 +44,7 @@ public class NabBankPlugin extends Plugin {
     
     public static final File DATABASE_DIR = new File( RUNELITE_DIR, "sql" );
     
-    private Map< Integer, Integer > bankItems; // < id, quantity >
+    private Map< Integer, Integer > bankItems = new HashMap<>(); // < id, quantity >
     
     @Override
     public void startUp () {
@@ -56,12 +54,11 @@ public class NabBankPlugin extends Plugin {
     @Subscribe
     public void onGameStateChanged ( final GameStateChanged gameStateChanged ) {
         if ( gameStateChanged.getGameState() == GameState.LOGIN_SCREEN ) {
-            if ( userDatabase != null ){
+            if ( userDatabase != null ) {
                 try {
                     userDatabase.getDatabase().commit();
                     userDatabase.getDatabase().close();
                     userDatabase = null;
-                    bankItems = null;
                 } catch ( SQLException e ) {
                     e.printStackTrace();
                 }
@@ -76,7 +73,7 @@ public class NabBankPlugin extends Plugin {
         if ( widgetBankTitleBar == null || widgetBankTitleBar.isHidden() ) {
             return;
         }
-    
+        
         try {
             save( widgetBankTitleBar );
         } catch ( SQLException e ) {
@@ -86,19 +83,19 @@ public class NabBankPlugin extends Plugin {
         testShit();
     }
     
-    private void testShit (){
-    //    Widget widgetBankTitleBar = client.getWidget( WidgetInfo.BANK_TITLE_BAR );
-    //    Widget bankItemContainer = client.getWidget( WidgetInfo.BANK_ITEM_CONTAINER );
-    //
-    //    if ( widgetBankTitleBar == null || widgetBankTitleBar.isHidden() || widgetBankTitleBar.getText().contains( "Showing" ) || widgetBankTitleBar.getText().contains( "Tab" ) ) {
-    //        return;
-    //    }
-    //
-    //    WidgetItem coins = getItems()[ 39 ];
-    //
-    //    Widget test = bankItemContainer.createChild( 96, 5 );
-    //    WidgetItem item = test.getWidgetItem( 0 );
-    //    log.info( "{}", item.getId() );
+    private void testShit () {
+        //    Widget widgetBankTitleBar = client.getWidget( WidgetInfo.BANK_TITLE_BAR );
+        //    Widget bankItemContainer = client.getWidget( WidgetInfo.BANK_ITEM_CONTAINER );
+        //
+        //    if ( widgetBankTitleBar == null || widgetBankTitleBar.isHidden() || widgetBankTitleBar.getText().contains( "Showing" ) || widgetBankTitleBar.getText().contains( "Tab" ) ) {
+        //        return;
+        //    }
+        //
+        //    WidgetItem coins = getItems()[ 39 ];
+        //
+        //    Widget test = bankItemContainer.createChild( 96, 5 );
+        //    WidgetItem item = test.getWidgetItem( 0 );
+        //    log.info( "{}", item.getId() );
     }
     
     private void save ( Widget widgetBankTitleBar ) throws SQLException {
@@ -111,28 +108,37 @@ public class NabBankPlugin extends Plugin {
         if ( items.length == 0 || !isBankDifferent( items ) ) {
             return;
         }
-    
-        tryConnect();
-    
-        List<WidgetItem> diff = getDifferences( items );
         
-        bankItems = new HashMap<>(  );
-        for( WidgetItem item : items ){
-            bankItems.put( item.getId(), item.getQuantity() );
-        }
+        tryConnect();
+        
+        List< WidgetItem > diff = getDifferences( items );
         
         Statement statement = userDatabase.getDatabase().createStatement();
         for ( WidgetItem item : diff ) {
             int id = item.getId();
             int quantity = item.getQuantity();
             String name = itemManager.getItemComposition( id ).getName().replace( "'", "\'\'" );
-            String sql = "MERGE INTO ITEMS AS t USING (VALUES(" + id + "," + quantity + ",'" + name + "')) AS vals(id, quantity, name) " +
-                    "ON t.id=vals.id " +
-                    "WHEN MATCHED THEN UPDATE SET t.QUANTITY = vals.quantity " +
-                    "WHEN NOT MATCHED THEN INSERT VALUES vals.id, vals.quantity, vals.name;";
-            statement.addBatch( sql );
+            
+            Statement query = userDatabase.getDatabase().createStatement( ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY );
+            ResultSet resultSet = query.executeQuery( "SELECT QUANTITY FROM ITEMS WHERE ID = " + id + ";" );
+            if ( resultSet.next() ) {
+                int delta = quantity - resultSet.getInt( "QUANTITY" );
+                
+                if ( delta != 0 ) {
+                    String insertDeltaSQL = "INSERT INTO HISTORY ( ID, ITEM, DELTA, TIME ) VALUES ( NULL, " + id + ", " + delta + ", '" + new Timestamp( System.currentTimeMillis() ) + "' );";
+                    statement.addBatch( insertDeltaSQL );
+                }
+            }
+            
+            String updateItemsSQL = "MERGE INTO ITEMS AS t USING (VALUES(" + id + "," + quantity + ",'" + name + "')) AS vals(id, quantity, name) " + "ON t.id=vals.id " + "WHEN MATCHED THEN UPDATE SET t.QUANTITY = vals.quantity " + "WHEN NOT MATCHED THEN INSERT VALUES vals.id, vals.quantity, vals.name;";
+            statement.addBatch( updateItemsSQL );
         }
         statement.executeBatch();
+        
+        bankItems.clear();
+        for ( WidgetItem item : items ) {
+            bankItems.put( item.getId(), item.getQuantity() );
+        }
     }
     
     private boolean isBankDifferent ( WidgetItem[] items ) {
@@ -152,16 +158,16 @@ public class NabBankPlugin extends Plugin {
         return false;
     }
     
-    private List< WidgetItem > getDifferences ( WidgetItem[] newItems ){
-        if ( bankItems == null ){
+    private List< WidgetItem > getDifferences ( WidgetItem[] newItems ) {
+        if ( bankItems.isEmpty() ) {
             return Arrays.asList( newItems );
         }
         
-        List< WidgetItem > ret = new ArrayList<>(  );
+        List< WidgetItem > ret = new ArrayList<>();
         
-        for( WidgetItem item : newItems ){
-            if ( bankItems.containsKey( item.getId() ) ){
-                if ( bankItems.get( item.getId() ) != item.getQuantity() ){
+        for ( WidgetItem item : newItems ) {
+            if ( bankItems.containsKey( item.getId() ) ) {
+                if ( bankItems.get( item.getId() ) != item.getQuantity() ) {
                     ret.add( item );
                 }
             } else {
@@ -182,13 +188,15 @@ public class NabBankPlugin extends Plugin {
                 return;
             }
             userDatabase = new UserDatabase( client.getLocalPlayer().getName(), "bank" );
-    
+            
             //Run create script
             Statement s = userDatabase.getDatabase().createStatement();
             s.addBatch( "CREATE TABLE IF NOT EXISTS ITEMS( id INT PRIMARY KEY, quantity INT, name VARCHAR(32) );" ); //ITEM TABLE
+            s.addBatch( "CREATE TABLE IF NOT EXISTS HISTORY( ID INT PRIMARY KEY IDENTITY , ITEM INT, DELTA INT, TIME TIMESTAMP );" );
+            
             s.executeBatch();
             s.close();
-        } catch ( SQLException e ){
+        } catch ( SQLException e ) {
             e.printStackTrace();
         }
     }

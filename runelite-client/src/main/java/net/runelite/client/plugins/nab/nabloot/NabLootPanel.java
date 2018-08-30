@@ -6,9 +6,6 @@ import net.runelite.client.ui.PluginPanel;
 import javax.inject.Inject;
 
 public class NabLootPanel extends PluginPanel {
-    @Inject
-    private Client client;
-    
     private final NabLootConfig config;
     
     @Inject
