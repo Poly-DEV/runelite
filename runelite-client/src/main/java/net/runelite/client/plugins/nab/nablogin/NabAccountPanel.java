@@ -3,7 +3,6 @@ package net.runelite.client.plugins.nab.nablogin;
 import net.runelite.api.Experience;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.http.api.hiscore.HiscoreClient;
-import net.runelite.http.api.hiscore.HiscoreEndpoint;
 import net.runelite.http.api.hiscore.HiscoreResult;
 
 import javax.swing.*;
@@ -11,7 +10,6 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
 
 public class NabAccountPanel extends JPanel {
     private static final Dimension ICON_SIZE = new Dimension( 32, 32 );
@@ -68,16 +66,16 @@ public class NabAccountPanel extends JPanel {
         accountName.setPreferredSize( new Dimension( 0, 0 ) );    // items with longer names
         accountName.setText( username );
         rightPanel.add( accountName );
-    
+        
         SwingUtilities.invokeLater( () -> {
-        
-            HiscoreResult result;
-        try {
-            result = hiscoreClient.lookup( username, HiscoreEndpoint.NORMAL );
-        } catch ( IOException ex ) {
-            return;
-        }
-        
+            
+            HiscoreResult result = null;
+            //try {
+            //    result = hiscoreClient.lookup( username, HiscoreEndpoint.NORMAL );
+            //} catch ( IOException ex ) {
+            //    return;
+            //}
+            
             // Total level
             JLabel totalLevelLabel = new JLabel();
             totalLevelLabel.setForeground( ColorScheme.GRAND_EXCHANGE_PRICE );
