@@ -1,15 +1,15 @@
 /*
- * Copyright (c) 2018, l2-
+ * Copyright (c) 2018 Abex
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  *
  * 1. Redistributions of source code must retain the above copyright notice, this
- *     list of conditions and the following disclaimer.
+ *    list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
- *     this list of conditions and the following disclaimer in the documentation
- *     and/or other materials provided with the distribution.
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -22,11 +22,40 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.runelite.client.plugins.xpglobes;
+package net.runelite.cache.definitions;
 
-public enum OrbCentering
+import lombok.RequiredArgsConstructor;
+
+public class ClientScript1Instruction
 {
-	MIDDLE_CANVAS,
-	MIDDLE_VIEWPORT,
-	DYNAMIC
+	@RequiredArgsConstructor
+	public enum Opcode
+	{
+		RETURN(0),
+		BOOSTED_SKILL_LEVELS(1),
+		REAL_SKILL_LEVELS(1),
+		SKILL_EXPERIENCE(1),
+		WIDGET_CONTAINS_ITEM_GET_QUANTITY(3),
+		VARP(1),
+		EXPERIENCE_AT_LEVEL_FOR_SKILL(1),
+		VARP_TIMES_469(1),
+		COMBAT_LEVEL(1),
+		TOTAL_LEVEL(0),
+		WIDGET_CONTAINS_ITEM_STAR(3),
+		RUN_ENERGY(0),
+		WEIGHT(0),
+		VARP_TESTBIT(2),
+		VARBIT(1),
+		MINUS(0),
+		DIV(0),
+		MUL(0),
+		WORLD_X(0),
+		WORLD_Y(1),
+		CONSTANT(1);
+
+		public final int argumentCount;
+	}
+
+	public Opcode opcode;
+	public int[] operands;
 }
